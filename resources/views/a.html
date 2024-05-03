@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تيكست أريا مع اسماء الملفات</title>
+</head>
+<body>
+    <textarea id="textArea" cols="50" rows="10"></textarea><br>
+    <input type="file" id="fileInput" style="display:none;" multiple><br>
+    <button onclick="openFile()">فتح الملف</button><br>
+
+    <script>
+        // دالة لفتح ملف
+        function openFile() {
+            var fileInput = document.getElementById('fileInput');
+            fileInput.click();
+        }
+
+        // دالة للتحقق من اسم الملف وعرضه
+        function handleFile() {
+            var fileInput = document.getElementById('fileInput');
+            var files = fileInput.files;
+
+            if (files.length > 0) {
+                var textArea = document.getElementById('textArea');
+                textArea.value = ''; // إفراغ التيكست أريا
+
+                // عرض كل ملف بشكل منفصل
+                for (var i = 0; i < files.length; i++) {
+                    var reader = new FileReader();
+
+                    reader.onload = (function(file) {
+                        return function(event) {
+                            textArea.value += 'اسم الملف: ' + file.name + '\n================\n';
+                            textArea.value += event.target.result + '\n\n';
+                        };
+                    })(files[i]);
+
+                    reader.readAsText(files[i]);
+                }
+            }
+        }
+
+        // استماع لحدث change لإدخال الملف للحصول على اسم الملف
+        document.getElementById('fileInput').addEventListener('change', handleFile);
+    </script>
+</body>
+</html>

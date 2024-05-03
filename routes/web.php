@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PropertyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +14,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+
+// Route::resource('properties', 'PropertyController');
+Route::resource('properties', 'App\Http\Controllers\PropertyController');
+
+Route::get('/properties/{property}/show', [App\Http\Controllers\PropertyController::class, 'showModal'])->name('properties.show.modal');
+
+
+
+Route::get('/properties/{property}', [App\Http\Controllers\PropertyController::class, 'show'])->name('properties.show');
+
+Route::get('/ex/export', [PropertyController::class, 'exportProperties'])->name('properties.export');
+// Route::get('/properties/export', [PropertyController::class, 'exportProperties'])->name('properties.export');
+

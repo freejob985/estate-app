@@ -136,7 +136,11 @@
         .dark-mode .table-hover tbody tr:hover {
             background-color: #3e3e3e;
         }
+h1 {
+    text-align: right;
+}
     </style>
+ @stack('css')
 </head>
 <body>
     <!-- Side Navigation -->
@@ -144,50 +148,16 @@
         <a href="#"><i class="material-icons">home</i> الرئيسية</a>
         <a href="#"><i class="material-icons">settings</i> الإعدادات</a>
         <a href="#"><i class="material-icons">info</i> حول</a>
-        <a href="#"><i class="material-icons">contact_mail</i> اتصل بنا</a>
+        <a href="{{ route('properties.export') }}"><i class="material-icons">contact_mail</i>  تصدير اكسيل</a>
      <a href="#" onclick="toggleDarkMode()"><i class="material-icons">contact_mail</i>  الوضع المظلم</a>
     </nav>
 
-<style>
-
-</style>
-
     <!-- Main Content -->
     <main>
-        <h1>تصميم متجاوب مع القائمة الجانبية</h1>
-        <table class="table table-striped table-hover">
-            <!-- Table header -->
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>الاسم الأول</th>
-                    <th>اسم العائلة</th>
-                    <th>البريد الإلكتروني</th>
-                </tr>
-            </thead>
-            <!-- Table body -->
-            <tbody>
-                <tr>
-                    <th scope="row">1</th>
-                    <td>جون</td>
-                    <td>دو</td>
-                    <td>john@example.com</td>
-                </tr>
-                <tr>
-                    <th scope="row">2</th>
-                    <td>جين</td>
-                    <td>سميث</td>
-                    <td>jane@example.com</td>
-                </tr>
-                <tr>
-                    <th scope="row">3</th>
-                    <td>بوب</td>
-                    <td>جونسون</td>
-                    <td>bob@example.com</td>
-                </tr>
-            </tbody>
-        </table>
+ @yield('content')
+
     </main>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
     <!-- Material Design JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/material-components-web/13.0.0/material-components-web.min.js"></script>
@@ -203,6 +173,7 @@
     <script src="https://cdn.tiny.cloud/1/7e1mldkbut3yp4tyeob9lt5s57pb8wrb5fqbh11d6n782gm7/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+
     <script>
         // Toggle Dark Mode
         function toggleDarkMode() {
@@ -210,5 +181,7 @@
             body.classList.toggle("dark-mode");
         }
     </script>
+  @stack('js')
+
 </body>
 </html>
