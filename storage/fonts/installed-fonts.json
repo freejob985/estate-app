@@ -1,0 +1,16 @@
+{
+    "cairo": {
+        "200": "D:\\server\\htdocs\\estate-app\\storage\\fonts\/cairo_200_016e91f80693ea9a39f3f8b45871b529",
+        "300": "D:\\server\\htdocs\\estate-app\\storage\\fonts\/cairo_300_adebfb94605daa8752959c1403988edc",
+        "normal": "D:\\server\\htdocs\\estate-app\\storage\\fonts\/cairo_normal_040a14ebcb2e69e83169c84ef0a92e85",
+        "500": "D:\\server\\htdocs\\estate-app\\storage\\fonts\/cairo_500_21457be9154c30da4f489b9d34583858",
+        "600": "D:\\server\\htdocs\\estate-app\\storage\\fonts\/cairo_600_c4edbe142aaa1d274fb274a9a7754ee7",
+        "bold": "D:\\server\\htdocs\\estate-app\\storage\\fonts\/cairo_bold_a802969112dc5002963c9b3638d30968",
+        "800": "D:\\server\\htdocs\\estate-app\\storage\\fonts\/cairo_800_346855acbaec7cc011e8311ff6179ca4",
+        "900": "cairo_900_6f19b0b0462c8d77af13d2d4d9663041"
+    },
+    "droid arabic kufi": {
+        "normal": "D:\\server\\htdocs\\estate-app\\storage\\fonts\/droid_arabic_kufi_normal_4ee320a32a99eb927d4feb499e7692d0",
+        "bold": "droid_arabic_kufi_bold_7498adb08720cf2114572832555677b1"
+    }
+}
