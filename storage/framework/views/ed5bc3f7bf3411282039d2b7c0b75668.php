@@ -12,7 +12,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 </head>
 <body>
-    <h1>تحميل الملفات باستخدام Dropzone.js</h1>
+<br>
+    <h1> <?php echo e($property->project_name); ?></h1>
+<hr>
     <!-- صندوق الإسقاط -->
     <form action="<?php echo e(route('properties.upload-images', $property->id)); ?>" class="dropzone" id="myDropzone" enctype="multipart/form-data">
     </form>
@@ -77,7 +79,32 @@
     </script>
 </body>
 </html>
+<?php $__env->startPush('css'); ?>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap');
+*{
+  font-family: "Cairo", sans-serif;
 
+}
+.table > tbody > tr > td {
+    border: none;
+    color: #888ea8;
+    font-size: 20px;
+    letter-spacing: 1px;
+}
+.table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #ffffff !important;
+}
+.table > tbody > tr > td {
+    border: none;
+    color: #ffffff !important;
+    font-size: 15px;
+    letter-spacing: 1px;
+}
+</style>
+<?php $__env->stopPush(); ?>
 <?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('layout', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH D:\server\htdocs\estate-app\resources\views/properties/upload-images.blade.php ENDPATH**/ ?>

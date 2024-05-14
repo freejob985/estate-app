@@ -31,6 +31,7 @@ return new class extends Migration
             $table->string('region');
             $table->timestamp('last_updated')->nullable();
             $table->string('compound_name');
+            $table->foreignId('user_id')->constrained('users');
             $table->timestamps();
         });
     }

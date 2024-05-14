@@ -124,6 +124,17 @@
   font-family: "Cairo", sans-serif;
 
 }
+.table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #ffffff !important;
+}
+.table > tbody > tr > td {
+    border: none;
+    color: #ffffff !important;
+    font-size: 15px;
+    letter-spacing: 1px;
+}
 </style>
 <?php $__env->stopPush(); ?>
 

@@ -14,7 +14,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 </head>
 <body>
-    <h1>تحميل الملفات باستخدام Dropzone.js</h1>
+<br>
+    <h1> {{  $property->project_name }}</h1>
+<hr>
     <!-- صندوق الإسقاط -->
     <form action="{{ route('properties.upload-images', $property->id) }}" class="dropzone" id="myDropzone" enctype="multipart/form-data">
     </form>
@@ -79,5 +81,30 @@
     </script>
 </body>
 </html>
+@push('css')
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap');
+*{
+  font-family: "Cairo", sans-serif;
 
+}
+.table > tbody > tr > td {
+    border: none;
+    color: #888ea8;
+    font-size: 20px;
+    letter-spacing: 1px;
+}
+.table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #ffffff !important;
+}
+.table > tbody > tr > td {
+    border: none;
+    color: #ffffff !important;
+    font-size: 15px;
+    letter-spacing: 1px;
+}
+</style>
+@endpush
 @endsection

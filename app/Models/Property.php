@@ -33,7 +33,8 @@ class Property extends Model
         'region',
         'last_updated',
         'compound_name',
-'project_name'
+'project_name',
+'user_id'
     ];
 
     /**
@@ -43,4 +44,9 @@ class Property extends Model
     {
         return $this->hasMany(PropertyImage::class);
     }
+   public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
 }

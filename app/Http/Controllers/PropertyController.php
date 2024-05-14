@@ -2,26 +2,18 @@
 
 namespace App\Http\Controllers;
 
-
+use auth;
 use File;
 use Validator;
+use Codedge\Pdf\Pdf;
 use App\Models\Property;
 use Illuminate\Http\Request;
 use App\Models\PropertyImage;
-use Codedge\Pdf\Pdf;
-
-
-
-use Barryvdh\Snappy\Facades\SnappyPdf;
-
-
 use App\Exports\PropertiesExport;
+use App\Imports\PropertiesImport;
 use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\Snappy\Facades\SnappyPdf;
 use Illuminate\Support\Facades\Storage;
-// use Niklasravnsborg\LaravelPdf\Facades\Pdf;
-
-
-
 
 class PropertyController extends Controller
 {
@@ -30,44 +22,26 @@ class PropertyController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-
-//   public function exportPdf(Property $property)
-//     {
-//         $property->load('images');
-//         $pdf = Pdf::loadView('properties.pdf', compact('property'));
-//         return $pdf->download('property_' . $property->unit_code . '.pdf');
-//     }
-
-
-
-    public function exportPdf(Property $property)
+    public function index(Request $request)
     {
-        $property->load('images');
-        $html = view('properties.pdf', compact('property'))->render();
-        $pdf = \Pdf::loadHTML($html)
-            ->setOptions([
-                'defaultFont' => 'DejaVu Sans',
-                'isHtml5ParserEnabled' => true,
-                'isRemoteEnabled' => true,
-            ]);
-        return $pdf->stream('property_' . $property->unit_code . '.pdf');
+ if (!auth()->check()) {
+        return redirect()->route('login');
     }
+        $search = $request->input('search');
+        $properties = Property::when($search, function ($query, $search) {
+            return $query->where('unit_code', 'like', "%$search%")
+                ->orWhere('unit_type', 'like', "%$search%")
+                ->orWhere('phase', 'like', "%$search%")
+                ->orWhere('floor', 'like', "%$search%")
+                ->orWhere('client_number', 'like', "%$search%")
+                ->orWhere('region', 'like', "%$search%")
+                ->orWhere('compound_name', 'like', "%$search%");
+        })
+        ->with('images', 'user')
+        ->paginate(10);
 
-public function index(Request $request)
-{
-    $search = $request->input('search');
-    $properties = Property::when($search, function ($query, $search) {
-        return $query->where('unit_code', 'like', "%$search%")
-            ->orWhere('unit_type', 'like', "%$search%")
-            ->orWhere('phase', 'like', "%$search%")
-            ->orWhere('floor', 'like', "%$search%")
-            ->orWhere('client_number', 'like', "%$search%")
-            ->orWhere('region', 'like', "%$search%")
-            ->orWhere('compound_name', 'like', "%$search%");
-    })->with('images')->paginate(10);
-
-    return view('welcome', compact('properties'));
-}
+        return view('welcome', compact('properties'));
+    }
 
     /**
      * Show the form for creating a new property.
@@ -76,6 +50,9 @@ public function index(Request $request)
      */
     public function create()
     {
+ if (!auth()->check()) {
+        return redirect()->route('login');
+    }
         return view('properties.create');
     }
 
@@ -85,6 +62,76 @@ public function index(Request $request)
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'project_name' => 'required|string',
+            'unit_code' => 'required|string',
+            'unit_type' => 'required|string',
+            'phase' => 'required|string',
+            'floor' => 'required|string',
+            'area' => 'required|numeric',
+            'received' => 'nullable|numeric',
+            'paid' => 'nullable|numeric',
+            'over_payment' => 'nullable|numeric',
+            'down_payment' => 'nullable|numeric',
+            'installments' => 'nullable|numeric',
+            'remaining' => 'nullable|numeric',
+            'maintenance' => 'nullable|numeric',
+            'total' => 'nullable|numeric',
+            'notes' => 'nullable|string',
+            'client_number' => 'required|string',
+            'region' => 'required|string',
+            'last_updated' => 'nullable|date',
+            'compound_name' => 'required|string',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+        ], [
+            'required' => 'الحقل :attribute مطلوب.',
+            'string' => 'الحقل :attribute يجب أن يكون نصًا.',
+            'numeric' => 'يجب أن يكون الحقل :attribute رقمًا.',
+            'date' => 'يجب أن يكون الحقل :attribute تاريخًا صالحًا.',
+            'image' => 'يجب أن يكون الحقل :attribute صورة.',
+            'mimes' => 'يجب أن يكون الحقل :attribute من نوع: :values.',
+            'max' => 'يجب ألا يتجاوز حجم الحقل :attribute :max كيلوبايت.',
+        ], [
+            'project_name' => 'اسم المشروع',
+            'unit_code' => 'رمز الوحدة',
+            'unit_type' => 'نوع الوحدة',
+            'phase' => 'المرحلة',
+            'floor' => 'الطابق',
+            'area' => 'المساحة',
+            'received' => 'المبلغ المستلم',
+            'paid' => 'المبلغ المدفوع',
+            'over_payment' => 'المبلغ الزائد',
+            'down_payment' => 'الدفعة المقدمة',
+            'installments' => 'الأقساط',
+            'remaining' => 'المبلغ المتبقي',
+            'maintenance' => 'رسوم الصيانة',
+            'total' => 'المجموع',
+            'notes' => 'ملاحظات',
+            'client_number' => 'رقم العميل',
+            'region' => 'المنطقة',
+            'last_updated' => 'آخر تحديث',
+            'compound_name' => 'اسم المجمع',
+            'images.*' => 'صور الوحدة',
+        ]);
+
+        $property = auth()->user()->properties()->create($validatedData);
+
+        if ($request->hasFile('images')) {
+            $images = $request->file('images');
+            foreach ($images as $image) {
+                $imageName = time() . '_' . $image->getClientOriginalName();
+                $imagePath = 'property_images/' . $property->project_name . '_' . now()->format('Y-m-d') . '/' . $imageName;
+                $image->move(public_path($imagePath), $imageName);
+                $property->images()->create([
+                    'image_path' => $imagePath,
+                ]);
+            }
+        }
+
+        return redirect()->route('properties.index')->with('success', 'تم إضافة العقار بنجاح.');
+    }
 
     /**
      * Display the specified property.
@@ -92,11 +139,14 @@ public function index(Request $request)
      * @param  \App\Models\Property  $property
      * @return \Illuminate\Http\Response
      */
-public function show(Property $property)
-{
-    $property->load('images');
-    return view('properties.show', compact('property'));
-}
+    public function show(Property $property)
+    {
+ if (!auth()->check()) {
+        return redirect()->route('login');
+    }
+        $property->load('images', 'user');
+        return view('properties.show', compact('property'));
+    }
 
     /**
      * Show the form for editing the specified property.
@@ -106,80 +156,15 @@ public function show(Property $property)
      */
     public function edit(Property $property)
     {
-        $property->load('images');
+ if (!auth()->check()) {
+        return redirect()->route('login');
+    }
 
+
+        $property->load('images');
         return view('properties.edit', compact('property'));
     }
-public function store(Request $request)
-{
-    $validatedData = $request->validate([
-        'project_name' => 'required|string',
-        'unit_code' => 'required|string',
-        'unit_type' => 'required|string',
-        'phase' => 'required|string',
-        'floor' => 'required|string',
-        'area' => 'required|numeric',
-        'received' => 'nullable|numeric',
-        'paid' => 'nullable|numeric',
-        'over_payment' => 'nullable|numeric',
-        'down_payment' => 'nullable|numeric',
-        'installments' => 'nullable|numeric',
-        'remaining' => 'nullable|numeric',
-        'maintenance' => 'nullable|numeric',
-        'total' => 'nullable|numeric',
-        'notes' => 'nullable|string',
-        'client_number' => 'required|string',
-        'region' => 'required|string',
-        'last_updated' => 'nullable|date',
-        'compound_name' => 'required|string',
-        'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
-    ], [
-        'required' => 'الحقل :attribute مطلوب.',
-        'string' => 'الحقل :attribute يجب أن يكون نصًا.',
-        'numeric' => 'يجب أن يكون الحقل :attribute رقمًا.',
-        'date' => 'يجب أن يكون الحقل :attribute تاريخًا صالحًا.',
-        'image' => 'يجب أن يكون الحقل :attribute صورة.',
-        'mimes' => 'يجب أن يكون الحقل :attribute من نوع: :values.',
-        'max' => 'يجب ألا يتجاوز حجم الحقل :attribute :max كيلوبايت.',
-    ], [
-        'project_name' => 'اسم المشروع',
-        'unit_code' => 'رمز الوحدة',
-        'unit_type' => 'نوع الوحدة',
-        'phase' => 'المرحلة',
-        'floor' => 'الطابق',
-        'area' => 'المساحة',
-        'received' => 'المبلغ المستلم',
-        'paid' => 'المبلغ المدفوع',
-        'over_payment' => 'المبلغ الزائد',
-        'down_payment' => 'الدفعة المقدمة',
-        'installments' => 'الأقساط',
-        'remaining' => 'المبلغ المتبقي',
-        'maintenance' => 'رسوم الصيانة',
-        'total' => 'المجموع',
-        'notes' => 'ملاحظات',
-        'client_number' => 'رقم العميل',
-        'region' => 'المنطقة',
-        'last_updated' => 'آخر تحديث',
-        'compound_name' => 'اسم المجمع',
-        'images.*' => 'صور الوحدة',
-    ]);
 
-    $property = Property::create($validatedData);
-
-    if ($request->hasFile('images')) {
-        $images = $request->file('images');
-        foreach ($images as $image) {
-            $imageName = time() . '_' . $image->getClientOriginalName();
-            $imagePath = 'property_images/' . $property->project_name . '_' . now()->format('Y-m-d') . '/' . $imageName;
-            $image->move(public_path($imagePath), $imageName);
-            $property->images()->create([
-                'image_path' => $imagePath,
-            ]);
-        }
-    }
-
-    return redirect()->route('properties.index')->with('success', 'تم إضافة العقار بنجاح.');
-}
     /**
      * Update the specified property in storage.
      *
@@ -187,9 +172,13 @@ public function store(Request $request)
      * @param  \App\Models\Property  $property
      * @return \Illuminate\Http\Response
      */
+
+
 public function update(Request $request, Property $property)
 {
-  $validatedData = $request->validate([
+
+
+    $validatedData = $request->validate([
         'unit_code' => 'required',
         'unit_type' => 'required',
         'phase' => 'required',
@@ -266,36 +255,43 @@ public function update(Request $request, Property $property)
             ]);
         }
     }
-// dd(1);
+
     return redirect()->route('properties.index')
         ->with('success', 'تم التعديل بنجاح');
 }
 
-    /**
-     * Remove the specified property from storage.
-     *
-     * @param  \App\Models\Property  $property
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Property $property)
-    {
-        $property->images()->delete(); // Supprimer toutes les images associées
-        $property->delete(); // Supprimer la propriété
-
-        return redirect()->route('properties.index')
-                         ->with('success', 'تم الحذف بنجاح');
-    }
-    public function showModal(Property $property)
-    {
-        $property->load('images');
-        return response()->json([
-            'html' => view('properties.show-modal', compact('property'))->render()
-        ]);
+/**
+ * Remove the specified property from storage.
+ *
+ * @param  \App\Models\Property  $property
+ * @return \Illuminate\Http\Response
+ */
+public function destroy(Property $property)
+{
+    if ($property->user_id != auth()->id()) {
+        return redirect()->back()->withErrors('ليس لديك صلاحية لحذف هذا العقار.');
     }
 
+    $property->images()->delete(); // Supprimer toutes les images associées
+    $property->delete(); // Supprimer la propriété
+
+    return redirect()->route('properties.index')
+                     ->with('success', 'تم الحذف بنجاح');
+}
+
+public function showModal(Property $property)
+{
+    $property->load('images', 'user');
+    return response()->json([
+        'html' => view('properties.show-modal', compact('property'))->render()
+    ]);
+}
 
 public function exportProperties()
 {
+ if (!auth()->check()) {
+        return redirect()->route('login');
+    }
     $export = new PropertiesExport();
     return Excel::download($export, 'properties.xlsx');
 }
@@ -333,10 +329,75 @@ public function uploadImages(Request $request, Property $property)
     return response()->json(['message' => 'تم رفع الصور بنجاح']);
 }
 
-
 public function showUploadImagesForm(Property $property)
 {
+ if (!auth()->check()) {
+        return redirect()->route('login');
+    }
     return view('properties.upload-images', compact('property'));
 }
 
+
+
+
+public function importFromExcel(Request $request)
+{
+    $request->validate([
+        'file' => 'required|file|mimes:xlsx,xls',
+    ]);
+
+// dd(
+
+
+// );
+
+    $file = $request->file('file');
+    $filePath = $file->getRealPath();
+     $id=Auth::user()->id;
+    $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($filePath);
+    $worksheet = $spreadsheet->getActiveSheet();
+
+    $rows = $worksheet->toArray(null, true, true, true);
+
+    $properties = [];
+
+    foreach ($rows as $key => $row) {
+        if ($key > 1) { // Skip the header row
+            $property = [
+                'unit_code' => $row['A'],
+                'unit_type' => $row['B'],
+                'phase' => $row['C'],
+                'floor' => $row['D'],
+                'area' => $row['E'],
+                'received' => $row['F'],
+                'paid' => $row['G'],
+                'over_payment' => $row['H'],
+                'down_payment' => $row['I'],
+                'installments' => $row['J'],
+                'remaining' => $row['K'],
+                'maintenance' => $row['L'],
+                'total' => $row['M'],
+                'notes' => $row['N'],
+                'client_number' => $row['O'],
+                'region' => $row['P'],
+                'last_updated' => $row['Q'],
+                'compound_name' => $row['R'],
+                'project_name' => $row['S'],
+         'user_id' => $id,
+            ];
+
+            Property::create($property);
+        }
+    }
+
+    return redirect()->route('properties.index')->with('success', 'تم استيراد البيانات بنجاح!');
 }
+
+public function exportTemplate()
+{
+    return Excel::download(new PropertiesExport, 'properties_template.xlsx');
+}
+
+
+}
+
